@@ -33,7 +33,6 @@ async def messages(client, message):
                 uti.att_json(data)
             workouts = Usuario.get_msg(app_user)
             ranking +=f'\n{workouts}'
-        print(ranking)
         await message.reply('{}'.format(ranking))
     else:
         await message.reply(f'Usuário {user} não registrado')
@@ -54,7 +53,6 @@ async def messages(client, message):
                 uti.att_json(data)
             workouts = Usuario.get_msg(app_user)
             ranking +=f'\n{workouts}'
-        print(ranking)
         await message.reply('{}'.format(ranking))
     else:
         await message.reply(f'Usuário {user} não registrado')
@@ -62,8 +60,7 @@ async def messages(client, message):
 
 @app.on_message(filters.command('ranking'))
 async def messages(client, message):
-    json_encoding = uti.detect_encoding('data.json')
-    with open("data.json", 'r', encoding=json_encoding) as my_json:
+    with open("data.json", 'r', encoding='utf-8') as my_json:
         data = json.load(my_json)
     users_list = uti.get_users_list(data)
     user = message.from_user.first_name
@@ -72,7 +69,6 @@ async def messages(client, message):
         for app_user in users_list:
             workouts = Usuario.get_msg(app_user)
             ranking +=f'\n{workouts}'
-        print(ranking)
         await message.reply('{}'.format(ranking))
 
 

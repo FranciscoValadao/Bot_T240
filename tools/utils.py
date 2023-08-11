@@ -20,12 +20,6 @@ def att_json(dados):
     with open('data.json', 'r', encoding='utf-8') as arq, \
         tempfile.NamedTemporaryFile('w', delete=False) as out:
     # escreve o objeto atualizado no arquivo temporário
-        json.dump(dados, out, ensure_ascii=False, indent=4, separators=(',',':'))
+        json.dump(dados, out, indent=4, separators=(',',':'))
     # se tudo deu certo, renomeia o arquivo temporário
     shutil.move(out.name, 'data.json')
-
-def detect_encoding(file_path):
-    with open(file_path, 'rb') as file:
-        rawdata = file.read()
-    result = chardet.detect(rawdata)
-    return result['encoding']
