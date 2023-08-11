@@ -7,6 +7,7 @@ from classes import Usuario
 import json
 import shutil
 import tempfile
+import tools.utils as uti
 
 
 load_dotenv()
@@ -19,110 +20,62 @@ app = Client('T240_bot',
 
 @app.on_message(filters.command('hojeteve'))
 async def messages(client, message):
-    #Verifica quem mandou a mensagem
-    if message.from_user.first_name == 'Francisco':
-        Usuario.set_treino(vala)
-        data["xico"] = Usuario.get_treino(vala)
-    elif message.from_user.first_name == 'João Pedro':
-        Usuario.set_treino(joao)
-        data["joao"] = Usuario.get_treino(joao)
-    elif message.from_user.first_name == 'Miguel':
-        Usuario.set_treino(scat)
-        data["scat"] = Usuario.get_treino(scat)
-    elif message.from_user.first_name == 'Yago':
-        Usuario.set_treino(yago)
-        data["yago"] = Usuario.get_treino(yago)
-    #Transforma as informações num compilado
-    var = ("""
-    {}
-{}
-{}
-{}
-    """ .format(
-    Usuario.get_msg(vala),
-    Usuario.get_msg(joao),
-    Usuario.get_msg(scat),
-    Usuario.get_msg(yago)
-                         ))
-    #Envia o ranking no app
-    print(var)
-    print(message.from_user.first_name)
-    await message.reply('{}'.format(var))
-    #Atualiza o arquivo json
-    att_json(data)
-
-
-
-
+    with open("data.json", 'r', encoding='utf-8') as my_json:
+        data = json.load(my_json)
+    users_list = uti.get_users_list(data)
+    user = message.from_user.first_name
+    ranking = ''
+    if user in data.keys():
+        for app_user in users_list:
+            if app_user.name == user:
+                Usuario.set_workout(app_user)
+                data[user] = Usuario.get_workout(app_user)
+                uti.att_json(data)
+            workouts = Usuario.get_msg(app_user)
+            ranking +=f'\n{workouts}'
+        print(ranking)
+        await message.reply('{}'.format(ranking))
+    else:
+        await message.reply(f'Usuário {user} não registrado')
 
 
 @app.on_message(filters.command('tevenada'))
 async def messages(client, message):
-    if message.from_user.first_name == 'Francisco':
-        Usuario.set_desfaz(vala)
-        data["xico"] = Usuario.get_treino(vala)
-    elif message.from_user.first_name == 'João Pedro':
-        Usuario.set_desfaz(joao)
-        data["joao"] = Usuario.get_treino(joao)
-    elif message.from_user.first_name == 'Miguel':
-        Usuario.set_desfaz(scat)
-        data["scat"] = Usuario.get_treino(scat)
-    elif message.from_user.first_name == 'Yago':
-        Usuario.set_desfaz(yago)
-        data["yago"] = Usuario.get_treino(yago)
-
-    var = ("""
-    {}
-{}
-{}
-{}
-    """ .format(
-    Usuario.get_msg(vala),
-    Usuario.get_msg(joao),
-    Usuario.get_msg(scat),
-    Usuario.get_msg(yago)
-                         ))
-    print(var)
-    print(message.from_user.first_name)
-    await message.reply('{}'.format(var))
-    #Atualiza o arquivo json
-    att_json(data)
+    with open("data.json", 'r', encoding='utf-8') as my_json:
+        data = json.load(my_json)
+    users_list = uti.get_users_list(data)
+    user = message.from_user.first_name
+    ranking = ''
+    if user in data.keys():
+        for app_user in users_list:
+            if app_user.name == user:
+                Usuario.undo_workout(app_user)
+                data[user] = Usuario.get_workout(app_user)
+                uti.att_json(data)
+            workouts = Usuario.get_msg(app_user)
+            ranking +=f'\n{workouts}'
+        print(ranking)
+        await message.reply('{}'.format(ranking))
+    else:
+        await message.reply(f'Usuário {user} não registrado')
 
 
 @app.on_message(filters.command('ranking'))
 async def messages(client, message):
-    var = ("""
-    {}
-{}
-{}
-{}
-    """ .format(
-    Usuario.get_msg(vala),
-    Usuario.get_msg(joao),
-    Usuario.get_msg(scat),
-    Usuario.get_msg(yago)
-                         ))
-    print(var)
-    print(message.from_user.first_name)
-    await message.reply('{}'.format(var))
-
-def att_json(dados):
-    with open('data.json', 'r', encoding='utf-8') as arq, \
-        tempfile.NamedTemporaryFile('w', delete=False) as out:
-    # escreve o objeto atualizado no arquivo temporário
-        json.dump(dados, out, ensure_ascii=False, indent=4, separators=(',',':'))
-    # se tudo deu certo, renomeia o arquivo temporário
-    shutil.move(out.name, 'data.json')
+    json_encoding = uti.detect_encoding('data.json')
+    with open("data.json", 'r', encoding=json_encoding) as my_json:
+        data = json.load(my_json)
+    users_list = uti.get_users_list(data)
+    user = message.from_user.first_name
+    ranking = ''
+    if user in data.keys():
+        for app_user in users_list:
+            workouts = Usuario.get_msg(app_user)
+            ranking +=f'\n{workouts}'
+        print(ranking)
+        await message.reply('{}'.format(ranking))
 
 
-my_json = open("data.json")
-data = json.load(my_json)
-
-print(data)
-
-yago = Usuario('Yago', data["yago"])
-joao = Usuario('João', data["joao"])
-vala = Usuario('Vala', data["xico"])
-scat = Usuario('Scat', data["scat"])
-
-app.run()
+if __name__ == '__main__':
+    print("running")
+    app.run()
